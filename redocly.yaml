@@ -1,0 +1,886 @@
+# INTRODUCTION
+#   Developer:
+#     Please change the file name found on line 27 to the file name of your API Spec and save.
+#
+#   Document Information:
+#     The commented chunk of text that is found below is the rule checklist. There, you will find every
+#     single rule that the linter checks for.
+#
+#     Below the checklist is the implementation of each rule. That is where you will find answers if you
+#     find yourself confused as to why a specific rule is triggering as well as exactly what the rule
+#     tests for.
+#
+#     Even further below are the built-in rules. Here you can customize the exceptions for the
+#     rules 'request-mime-type' and 'path-segment-plural'. 
+#
+#     See https://redocly.com/docs/cli/rules/configurable-rules/ to see the documentation/syntax for the configurable
+#     See https://redocly.com/docs/cli/rules/built-in-rules/ to see the documentation/syntax for the built-in rules
+#
+#     The rule checklist is derived from LPL's API Review Board
+#     found here: https://lplfinancial.atlassian.net/wiki/spaces/EA/pages/59342487975/API+Review+Board
+#
+#     License to use commercially: https://github.com/Redocly/redocly-cli/blob/main/LICENSE.md
+
+# Define the API name, version, and path.
+# apis:
+#   financial-planning@1.0.0:
+#     root: ./.openapi/financial-planning.yml
+#   advisor-transitions@1.0.0:
+#     root: ./.openapi/advisor-transitions.yaml
+
+# Define the Redocly ruleset and any custom plugins.
+extends:
+  - recommended
+plugins: []
+  # - '.openapi/plugins/api-plugins.js'
+
+rules:
+# Rule Checklist
+#    1. Business Focused:
+#         Sufficiently powerful to satisfy requirements. Choosing the most important intents (use cases)
+#         for that API and making them easier to understand and reuse. Think about your intended audience
+#         a bit before writing your code.
+#       Rules:
+#         1.1. We can ensure that there is documentation URL.
+#         1.2. We can ensure that each Operation has AHA tag.
+#    2. API Name
+#         Must be descriptive enough and easy to search.
+#       Rules:
+#         2.1. We can ensure that the API Name is descriptive (at least 8 characters long).
+#         2.2. We can ensure that the API Name is unique.
+#         2.3. We can ensure that the API Name does not include CRUD operations.
+#    3. API Description
+#         Appropriate to the audience. Help external folks understand the API and what it can do.
+#       Rules:
+#         3.1. We can ensure that the API description is sufficiently long.
+#    4. API Type
+#         Visibility and accessibility of APIs across the organization. e.g. internal vs external APIs.
+#       Rules:
+#         4.1. We can ensure that x-lpl-api-type is Private API or Partner API.
+#    5. API Style
+#         Accept REST & Event-Driven APIs.
+#       Rules:
+#         5.1. We can ensure that the API Style follows that of REST and Event-Driven APIs.
+#         Developer Note: does not currently consider Event-Driven APIs.
+#    6. API Design
+#         API led integration that are easy to extend. Develop API-First APIs.
+#       Rules:
+#         6.1. Detail each rule we can derive and implement in code ...
+#    7. API Management
+#         API can only be accessed via API Gateway and is visible in Developer Portal. Gateway policies
+#         enforced: Rate Limiting.
+#       Rules:
+#         7.1. We can ensure that approved API Gateways are used.
+#         Developer Note: get list of approved gateways and confirm where gateway is specfied in API spec.
+#         7.2. We can ensure that X-RateLimit-Limit and X-RateLimit-Remaining headers are defined.
+#    8. API Domain
+#         Domain Alignment of APIs. It is extremely vital to separate the domains and subdomains of the
+#         application. Concept of ubiquitous language that aims to bring code closer to business.
+#       Rules:
+#         8.1. We can ensure that server URLs match LPL's company domain
+#         8.2. TODO: Create a valid enum list of domain abbreviations and ensure that the format:
+#              https://<base-url>/<domain-name>/<api-name>/resources/structure
+#
+#              Dan confirmed that the <api-name> should match the title: value and that the 
+#              abbreviations are from a list maintained by "Michele Castonguay" <Michele.Castonguay@lplfinancial.com>
+#
+#    9. URI Readability
+#         The purpose of an URI (i.e. https://api.lpl.com/advisors) is to uniquely identify a specific
+#         resource.
+#       Rules:
+#         9.1. We can ensure that the URI does not contain any verbs.
+#         9.2. We can ensure that the URI does not indicate any CRUD operations.
+#         9.3. We can ensure that the URI does not use filename extensions for the
+#              content type.
+#         9.4. We can ensure that the URI uses an immutable value for the identifier.
+#    10. Resource Names
+#         Use Plural Noun naming conventions whenever possible unless they are singleton resources. Use
+#         clear & intuitive names (no shortcuts or abbreviations unless the meaning is obvious).
+#       Rules:
+#         10.1. We can ensure that the resource names contain valid characters.
+#         10.2. We can ensure that the resource names do not contain consecutive slashes.
+#         10.3. We can ensure that all resource names are plural unless they are a singleton.
+#    11. Idempotence
+#         An idempotent HTTP method is an HTTP method that can be called multiple times without different
+#         outcomes. It would not matter if the method is called only once, or n times over. The result
+#         must be the same.
+#       Rules:
+#         11.1. We can ensure that PUT and DELETE operations are idempotent and have defined
+#               operationIds for tracking.
+#         11.2. We can ensure that GET requests do not have request bodies.
+#         11.3. We can ensure that POST requests do not use query params.
+#    12. Resource Hierarchy
+#         When you are dealing with nested resource limit to 2-resources deep. A strategy to keep the
+#         URL length shorter.
+#       Rules:
+#         12.1. We can ensure that there are, at most, 2 resources in the URL.
+#    13. Data Model
+#         Use typed values. A DTO defines part or all of data defined by the underlying Domain object.
+#         Note that data from different domain objects can be represented in a single DTO.
+#       Rules:
+#         13.1. We can ensure that field names are defined using underscores (e.g. {first_name, last_name}).
+#         13.2. We can ensure that dates are in UTC format.
+#    14. Output Format
+#         Default support for JSON, provide alternatives(xml) so users can choose which they need.  Use
+#         JSON Lint to validate your proposed resource representation.
+#       Rules:
+#         14.1. We can ensure that the Content-Type type in the response header is set to application/json.
+#               Developer Note: Need to see when octet-stream is used to further filter the input for this rule
+#         14.2. We can ensure that the Content-Type type is not set to xml, if it is, inform the user that
+#               it should only be done when absolutely necessary.
+#    15. Output Format
+#         Consider fast responses strategies: result filtering, sorting, pagination & searching as query
+#         params, use async/wait if at all possible, easy access to data even on a small scale, limiting
+#         which fields are returned by API, support gzip, headers that support cache control,
+#         denormalization of tables, different payload for different consumers, sealed classes, and CQRS
+#         pattern.
+#       Rules:
+#         15.1. We can ensure that the maximum number of records to return is 25.
+#    16. Error Messages
+#         Clear and structured error messages.  Provide a helpful response to the client, so that the
+#         client can understand and potentially fix the error.
+#         Developer Note: ask if we should check for each status code or if we should check for a default response.
+#       Rules:
+#         16.1. We can ensure that status code 200 is defined.
+#         16.2. We can ensure that status code 201 is defined.
+#         16.3. We can ensure that status code 400 is defined.
+#         16.4. We can ensure that status code 401 is defined.
+#         16.5. We can ensure that status code 403 is defined.
+#         16.6. We can ensure that status code 404 is defined.
+#         16.7. We can ensure that status code 429 is defined.
+#         16.8. We can ensure that status code 500 is defined.
+#         16.9. We can ensure that every status code >= 400 shares the same response model.
+#    17. Versioning
+#          Always version your API. Always require the clients to specify a version.
+#       Rules:
+#         17.1. We can ensure that the version is not in a header.
+#         17.2. We can ensure that the version is not denoted by a query parameter.
+#         17.3. We can ensure that the version is not part of the URL.
+#         17.4. We can ensure that the version does not default to the latest version.
+#         17.5. We can ensure that the version is in the Accept Header.
+#    18. HATEOAS
+#         HATEOAS (Hypermedia as the Engine of Application State) refers to discoverability. The client
+#         can interact with a REST API solely through the server’s responses. It is a self-documentary
+#         Hypermedia. Clients need not refer to any documentation to interact with a new API.
+#       Rules:
+#         18.1. Detail each rule we can derive and implement in code ...
+#    19. Security
+#         Implement standard security practices (validate all input, reject bad input, protect against SQL injections, etc).
+#       Rules:
+#         19.1. We can ensure that security schemes are defined.
+#         19.2. We can ensure that HTTP does not redirect to HTTPS.
+#         19.3. We can ensure that bad input is rejected.
+#         19.4. We can ensure that we are protected against SQL injections.
+#    20. Metrics
+#         **
+#       Rules:
+#         20.1. We can ensure that sensitive data is masked or obfuscated.
+#         20.2. We can ensure that GET /healthcheck' is implemented.
+#    21. Documentation
+#         An API is only as good as its documentation. The docs must be easy to find and publically accessible. Use
+#         SwaggerHub for API Documentation with examples. Provide API Credentials to communicate with users.
+#       Rules:
+#         21.1. Detail each rule we can derive and implement in code ...
+#    22. API Testing
+#         Supports Mocking and live testing of the API.
+#       Rules:
+#         22.1. Detail each rule we can derive and implement in code ...
+
+  # Rule 2.1: API Name Descriptive
+  rule/api-name-descriptive:
+    severity: warn
+    subject:
+      type: Info
+      property: title
+    assertions:
+      defined: true
+      casing: kebab-case
+      minLength: 8
+    message: |-
+      [ Checklist Rule 2.1 ]
+      API names must be descriptive, easy to search, and avoid using product and technology names.
+
+  # Rule 2.2: Unique API Name
+  #   Developer note: Consider creating a JS based plugin search to ensure the name is not already present in the registry.
+
+  # Rule 2.3: No CRUD in API Name
+  rule/no-crud-in-api-name:
+    severity: warn
+    subject:
+      type: Info
+      property: title
+    assertions: 
+      notPattern: /.*creat.*|.*read.*|.*updat.*/
+    message: |-
+      [ Checklist Rule 2.3 ]
+      API names must not include CRUD operations.
+
+  # Rule 3.1: Description Length
+  rule/api-description-length:
+    severity: warn
+    subject:
+      type: Info
+      property: description
+    assertions:
+      defined: true
+      minLength: 100
+    message: |-
+      [ Checklist Rule 3.1 ]
+      The API description must be focused on business use cases, addressing key user needs. It must be simple, yet powerful enough to fulfill business requirements.
+
+  # Rule 4.1: API Type
+  rule/api-type:
+    severity: warn
+    subject:
+      type: Info
+      property: x-lpl-api-type
+    assertions:
+      enum:
+        - Private API
+        - Partner API
+    message: |-
+      [ Checklist Rule 4.1 ]
+      The API Type must be defined as Private API or Partner API.
+
+  # Rule 5.1: Follow REST Design
+  rule/api-design-rest-get:
+    severity: warn
+    subject:
+      type: PathItem
+      filterOutParentKeys: 
+        - /healthcheck
+        - /login
+    assertions:
+      required:
+        - get
+        - delete
+      requireAny:
+        - post
+        - put
+    message: |-
+      [ Checklist Rule 5.1 ]
+      GET and DELETE operations must be present, and either POST or PUT must be present (healthcheck is excluded from this rule).
+
+  # Rule 7.2: Defined X-RateLimit-Limit and X-RateLimit-Remaining Headers
+#  rule/x-rate-defined:
+#    severity: off
+#    subject: 
+#      type: Responses
+#      property: headers
+#    assertions: 
+#      required: 
+#        - X-RateLimit-Limit
+#        - X-RateLimit-Remaining
+#    message: |-
+#      [ Checklist Rule 7.2 ]
+#      If you're using a semi-public API, X-RateLimit-Limit and X-RateLimit-Remaining must be defined.
+
+  # Rule 8.1: Server URL Match Company Domain
+  rule/api-domain:
+    severity: warn
+    subject:
+      type: Server
+      property: url
+    assertions:
+      pattern: '^(https?:\/\/)?[a-zA-Z0-9\-\.]+lpl\.com(?![a-zA-Z0-9\-\.])[\/\w \.-]*\/?$'
+    message: |-
+      [ Checklist Rule 8.1 ]
+      The server URL must match the pattern: https://*.lpl.com.
+
+  # Rule 8.2: URL Component Structure
+  # Domain name section should be in the listed enum 
+  # https://<base-url>/<domain-name>/<api-name>/resources/structure
+  # rule/api-domain-name:
+  #   severity: warn
+  #   subject:
+  #     type: Server
+  #     property: url (how can I specify the first element after the base-url?)
+  #   assertions:
+  #     enum:
+  #       - aop
+  #       - pcm
+  #   message: |-
+  #     [ Checklist Rule 8.2 ]
+  #     The domain name section of the URL should be one of the known domain abbreviations and follow this format:
+  #     https://<base-url>/<domain-name>/<api-name>/<resources>/<structure>
+
+  # TESTING
+  # rule/url-contains-domain:
+  #   severity: warn
+  #   subject:
+  #     type: Server
+  #     property: url
+  #   assertions:
+  #     local/hasKnownDomain:
+  #       min: 0
+  #   message: |-      
+  #     TESTING rule/url-contains-domain
+
+  # Rule 9.1: No Verbs in Paths
+  # Developer Rule: Disabled for testing.
+  # rule/no-verb-in-path:    
+  #   severity: warn
+  #   subject: 
+  #     type: PathItem
+  #     filterOutParentKeys: 
+  #       - /healthcheck
+  #   assertions:
+  #     local/noVerbsInPath:
+  #       min: 0
+  #   message: |-
+  #     [ Checklist Rule 9.1 ]
+  #     Paths must not contain any verbs.
+
+  # Rule 9.2: No CRUD in Paths
+  rule/no-crud-in-paths:
+    severity: warn
+    subject:
+      type: Paths
+    assertions:
+      notPattern: /.*-creat.*|.*-read.*|.*-updat.*/
+    message: |-
+      [ Checklist Rule 9.2 ]
+      Paths must not indicate any CRUD operations.
+
+  # Rule 9.3: No Filename Extensions in Paths
+  rule/no-filename-extensions:
+    severity: warn
+    subject:
+      type: Paths
+    assertions:
+      notPattern: /\./
+    message: |-
+      [ Checklist Rule 9.3 ]
+      Paths must not include a file extention.
+      
+  # Rule 9.4: Immutable Identifier
+  rule/immutable-identifier:
+    severity: warn
+    subject:
+      type: Parameter
+      property: name
+    assertions:
+      notPattern: /^id$/
+    message: |-
+      [ Checklist Rule 9.4 ]
+      Query parameter name must not be 'id'.
+
+  # Rule 10.1: Use Valid Characters in Path
+  rule/path-valid-characters:
+    severity: warn
+    subject:
+      type: PathItem
+    assertions:
+      pattern: /^([a-zA-Z0-9_-]+|(\{[a-zA-Z0-9_-]+\}))(\/([a-zA-Z0-9_-]+|(\{[a-zA-Z0-9_-]+\})))*$/
+    message: |-
+      [ Checklist Rule 10.1 ]
+      Path segment must consist of valid characters (a-z, A-Z, 0-9, _, -) or parameters enclosed with '{}'.
+
+  # Rule 10.2: Consecutive Slashes
+  rule/descriptive-paths:
+    severity: warn
+    subject:
+      type: Paths
+    assertions:
+      notPattern: /.*\/\/.*/
+    message: |-
+      [ Checklist Rule 10.2 ]
+      Paths must not contain consecutive slashes.
+
+  # Rule 10.3: Use Plural Nouns Unless Singleton
+  # Implemented via built-in rule named 'path-segment-plural'.
+  # Add singleton names under "exceptions" to exclude it from the plural check.
+
+  # Rule 11.1: PUT and DELETE Operations Are Idempotent
+  rule/idempotence:
+    severity: warn
+    subject:
+      type: Operation
+      property: operationId
+      filterInParentKeys:
+        - 'put'
+        - 'delete'
+    assertions:
+      defined: true
+    message: |-
+      [ Checklist Rule 11.1 ]
+      PUT and DELETE operations must be idempotent. Ensure they have defined operationIds for tracking.
+  
+  # Rule 11.2: No Request Bodies in GET Requests
+  rule/no-req-in-get:
+    severity: warn
+    subject:
+      type: Operation
+      filterInParentKeys:
+        - 'get'
+    assertions:
+      disallowed:
+        -  requestBody
+    message: |-
+      [ Checklist Rule 11.2 ]
+      GET operations must not have a request body.
+  
+  # Rule 11.3: No Query Params in POST Requests.
+  rule/no-query-in-post:
+    severity: warn
+    subject:
+      type: Parameter
+      property: in
+    assertions:
+      notPattern: /query/
+    where:
+      - subject:
+          type: Operation
+          filterInParentKeys:
+            - 'post'
+        assertions:
+          defined: true
+    message: |-
+      [ Checklist Rule 11.3 ]
+      POST operations must not have query parameters.
+
+  # Rule 12.1: Correctly Nest Resources in URL
+  # Developer Note: need to fix this so it actually does what it's supposed to do.
+  rule/path-not-end-with-slash:
+    severity: warn
+    subject:
+      type: PathItem
+    assertions:
+      pattern: /.*[^\/]$/
+    message: |-
+      [ Checklist Rule 12.1 ]
+      Nested resources must not exceed 2 layers in URL.
+
+  # Rule 13.1: Field Names Use Underscores
+  # Developer Note: should change assertion from notPattern checking for everything except
+  # underscores to pattern checking for underscores.
+  rule/use-underscores-in-dto:
+    severity: warn
+    subject:
+      type: Paths
+    assertions:
+      notPattern: /.*\{[a-z0-9]+(-[a-z0-9]+)\}.*|.*\{[a-z0-9]+(\.[a-z0-9]+)\}*/
+    message: |-
+      [ Checklist Rule 13.1 ]
+      Field names must use underscores to separate words, no hyphens or dots.
+  
+  # Rule 13.2: Dates In UTC Format
+
+  # Rule 14.1: Content-Type is 'application/json'
+  rule/output-format-json:
+    severity: warn
+    subject:
+      type: MediaTypesMap
+    assertions:
+      pattern: /application\/.*json.*|application\/octet-stream.*/
+    message: |-
+      [ Checklist Rule 14.1 ]
+      The API must support 'application/json' media type. Also accepts 'application/octet-stream' and 'application/problem.json'.
+
+  # Rule 14.2: Content-Type is Not 'xml'
+  rule/output-format-xml:
+    severity: warn
+    subject:
+      type: MediaTypesMap
+    assertions:
+      notPattern: /application\/xml/
+    message: |-
+      [ Checklist Rule 14.2 ]
+      The API must not support 'application/xml' media type unless absolutely necessary
+
+  # Rule 15.1: Limited Number of Items Returned in a Response
+  rule/performance-limit:
+    severity: warn
+    where:
+      - subject:
+          type: Response
+        assertions:
+          defined: true
+          requireAny: ["200", "201"]  # Modify or add the desired response codes
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+            const: array
+    subject:
+      type: Schema
+      property: maxItems
+    assertions:
+      defined: true
+    message: |-
+      [ Checklist Rule 15.1 ]
+      Maximum items returned in a response must be limited for better performance.
+
+  # Rule 16.1: Defined Success Response 200
+  rule/success-response-200:
+    severity: warn
+    subject:
+      type: Responses
+    # assertions:
+    #   required:
+    #     - '200'
+    assertions:
+      defined: true
+      requireAny: ["200", "201", "202", "203", "204"]  # Modify or add the desired response codes
+    message: |-
+      [ Checklist Rule 16.1 ]
+      A response for general success (status code 20X) must be defined.
+
+  # Rule 16.2: Defined Success Response 201
+  # Developer Note: Should be constrained to only test POST operations
+  rule/success-response-201:
+    severity: warn
+    subject:
+      type: Responses
+    # assertions:
+    #   required:
+    #     - '201'
+    assertions:
+      defined: true
+      requireAny: ["201", "default"]  # Modify or add the desired response codes    
+    message: |-
+      [ Checklist Rule 16.2 ]
+      A response for successful creation (status code 201) must be defined.
+
+  # Rule 16.3: Defined Error Response 400
+  rule/error-response-400:
+    severity: warn
+    subject:
+      type: Responses
+    # assertions:
+    #   required:
+    #     - '400'
+    assertions:
+      defined: true
+      requireAny: ["400", "default"]  # Modify or add the desired response codes    
+    message: |-
+      [ Checklist Rule 16.3 ]
+      A response for a bad request/invalid parameter (status code 400) must be defined.
+
+  # Rule 16.4: Defined Error Response 401
+  rule/error-response-401:
+    severity: warn
+    subject:
+      type: Responses
+    # assertions:
+    #   required:
+    #     - '401'
+    assertions:
+      defined: true
+      requireAny: ["401", "default"]  # Modify or add the desired response codes
+    message: |-
+      [ Checklist Rule 16.4 ]
+      A response for an unauthorized request (status code 401) must be defined.
+
+  # Rule 16.5: Defined Error Response 403
+  rule/error-response-403:
+    severity: warn
+    subject:
+      type: Responses
+    # assertions:
+    #   required:
+    #     - '403'
+    assertions:
+      defined: true
+      requireAny: ["403", "default"]  # Modify or add the desired response codes    
+    message: |-
+      [ Checklist Rule 16.5 ]
+      A response for missing permissions onto the resources (status code 403) must be defined.
+
+  # Rule 16.6: Defined Error Response 404
+  rule/error-response-404:
+    severity: warn
+    subject:
+      type: Responses
+    # assertions:
+    #   required:
+    #     - '404'
+    assertions:
+      defined: true
+      requireAny: ["404", "default"]  # Modify or add the desired response codes    
+    message: |-
+      [ Checklist Rule 16.6 ]
+      A response for missing resources (status code 404 or default) must be defined.
+
+  # Rule 16.7: Defined Error Response 429
+  rule/error-response-429:
+    severity: warn
+    subject:
+      type: Responses
+    assertions:
+      defined: true
+      requireAny: ["429", "default"]  # Modify or add the desired response codes
+    message: |-
+      [ Checklist Rule 16.7 ]
+      A response for too many requests (status code 429) must be defined.
+
+  # Rule 16.8: Defined Error Response 500
+  rule/error-response-500:
+    severity: warn
+    subject:
+      type: Responses
+    assertions:
+      defined: true
+      requireAny: ["500", "default"]  # Modify or add the desired response codes
+    message: |-
+      [ Checklist Rule 16.8 ]
+      A response for internal errors (status code 500) must be defined.
+
+  # Rule 16.9: Every Response with Status Code >= 400 Shares the Same Response Model.
+  #rule/same-response-models:
+  #  severity: warn
+  #  subject:
+  #    type: Schema
+  #    property: const
+  #  assertions:
+  #    local/sameResModel:
+  #      max: 0
+  #  message: |-
+  #    [ Checklist Rule 16.9 ]
+  #    Every response with a status code greater than or equal to 400 must have the same response model.
+
+  # Rule 17.1: API Version Is Not A Header
+  rule/versioning-not-in-header:
+    severity: warn
+    subject:
+      type: Info
+      property: x-version
+    assertions:
+      defined: false
+    message: |-
+      [ Checklist Rule 17.1 ]
+      The API Version must not be defined in a header.
+
+  # Rule 17.2: API Version Is Not Denoted by Query Parameter
+  rule/version-not-in-query-param:
+    severity: warn
+    subject:
+      type: Paths
+    assertions:
+      notPattern: /.*\{v[0-9]+\.[0-9]+\.[0-9]+\}*/
+    message: |-
+      [ Checklist Rule 17.2 ]
+      The API version must not be present in a query parameter.
+      
+  # Rule 17.3: API Version Is Not In URL
+  rule/versioning-not-in-url:
+    severity: warn
+    subject:
+      type: PathItem
+    assertions:
+      notPattern: /v[0-9]+\.[0-9]+\.[0-9]+|version=[0-9]+\.[0-9]+\.[0-9]+/
+    message: |-
+      [ Checklist Rule 17.1 ]
+      The API version must not be present in a header.
+
+  # Rule 17.4: API Version Does Not Default to Latest Version
+  
+  # Rule 17.5: API Version Is In Accept Header & In Semantic Versioning Format
+  rule/version-in-accept-header:
+    severity: warn
+    subject:
+      type: MediaTypesMap
+    assertions:
+      pattern: /application\/.*version=[0-9]+\.[0-9]+\.[0-9]+|application\/problem\+json/
+    message: |-
+      [ Checklist Rule 17.4 ]
+      The API version must be in accept header & in the following format: version=major.minor.patch
+
+  # Rule 19.1: Security Schemes Are Defined
+  rule/api-management-security:
+    severity: warn
+    subject:
+      type: Components
+      property: securitySchemes
+    assertions:
+      defined: true
+    message: |-
+      [ Checklist Rule 19.1 ]
+      The API must have security schemes defined to ensure proper API management.
+
+  # Rule 19.2: API Uses HTTPS Scheme
+  rule/security-scheme:
+    severity: warn
+    subject:
+      type: Server
+      property: url
+    assertions:
+      pattern: /^https:\/\//
+    message: |-
+      [ Checklist Rule 19.2 ]
+      The API must use HTTPS for secure communication.
+
+  # Rule 19.3: Reject Bad Input
+
+  # Rule 19.4: SQL Injection Protection
+
+  # Rule 20.1: Mask or Obfuscate Sensitive Data
+
+  # Rule 20.2: Implement GET /healthcheck
+  rule/healthcheck:
+    severity: warn
+    subject:
+      type: Paths
+    assertions:      
+      required:
+        - '/healthcheck'
+    message: |-
+      [ Checklist Rule 20.2 ]
+      The API must have GET /healthcheck implemented.
+
+  # Rule TBD: Schemas must be defined for response objects
+  rule/data-model-schema:
+    severity: warn
+    subject:
+      type: Components
+      property: schemas
+    assertions:
+      defined: true
+    message: |-
+      [ Checklist Rule TBD ]
+      Schemas must be defined for response objects for clear data model representation.
+
+  # Rule TBD: API version must be in the ACCEPTS header and match the info.version attribute
+  rule/versioning-in-header:
+    severity: warn
+    subject:
+      type: Operation
+      property: parameters
+    where:
+      - subject:
+          type: Parameter
+          property: name
+        assertions:
+          const: Accept
+      - subject:
+          type: Info
+          property: version
+        assertions:
+          const: '{{info.version}}'
+    assertions:
+      pattern: 'application\/json;version=\d+\.\d+\.\d+'
+    message: |-
+      [ Checklist Rule TBD ]
+      The API version must be present in the Accept header and match the API version.
+      For example, 'application/json;version={{info.version}}'.
+    
+  # Rule TBD: Resource Nouns
+  # Note: This rule might be challenging to enforce programmatically as determining whether a
+  # path item is a noun could require natural language processing capabilities.
+  #   Developer Note: Consider using pos to recognize the parts of speech (pos).
+  #   https://www.npmjs.com/package/pos
+  #  rule/resource-nouns:
+  #    subject:
+  #      type: PathItem
+  #    assertions:
+  #      plugin/PathIsPluralNoun:
+  #       options:
+  #          - 
+  #    message: |-
+  #      [ Checklist Rule #TBD ]
+
+  # Rule TBD: Responses must contain "links" property for related resources
+  #   Developer note: May require custom javascript plugin
+  # rule/hateoas:
+  #   subject:
+  #     type: Schema
+  #   assertions:
+  #     properties:,
+  #       required:
+  #         - links
+  #   message: Responses must contain links for related resources (HATEOAS principle). 
+
+# END
+
+# Built-In Rules
+
+  ## Special rules
+  no-unresolved-refs:                     off     # Every $ref must exist
+  no-unused-components :                  warn   # All components must be used
+  security-defined:                       warn   # Security rules must be defined, either globally or per-operation
+  spec:                                   warn   # Conform to the declared OpenAPI specification version
+  spec-components-invalid-map-name:       warn   # Use only alphanumeric and basic punctuation as key names in the components section
+  spec-strict-refs:                       warn   # Restricts the usage of the $ref keyword.
+
+  ## Info
+  info-contact:                           warn   # Contact section is defined under info
+  info-license:                           warn   # License section is defined under info
+  info-license-url:                       warn   # License section contains a url to the license
+
+  ## Operations
+  operation-2xx-response:                 warn # Every operation needs at least one 2xx response
+  operation-4xx-response:                 warn # Every operation needs at least one 4xx response
+  operation-4xx-problem-details-rfc7807:  warn # All 4xx responses use RFC7807 format
+  operation-description:                  warn # Description field is required for every operation
+  operation-operationId:                  warn # OperationId is required for every operation
+  operation-operationId-unique:           warn # OperationId must be unique
+  operation-operationId-url-safe:         warn # OperationIds can only contain characters that are safe to use in URLs
+  operation-summary:                      warn # Summary is required for every operation
+
+  ## Parameters
+  boolean-parameter-prefixes:             warn # All boolean parameter names start with a particular prefix (such as "is")
+  no-invalid-parameter-examples:          warn # Parameter examples must match declared schema types
+  operation-parameters-unique:            warn # No repeated parameter names within an operation
+  parameter-description:                  warn # Parameters must all have descriptions
+  path-declaration-must-exist:            warn # Paths must define template variables where placeholders are needed
+  path-not-include-query:                 warn # No query parameters in path declarations (declare them as parameters with in: query )
+  path-parameters-defined:                warn # Path template variables must be defined as parameters
+
+  ## Paths
+  no-ambiguous-paths:                     warn # No path can match more than one PathItem entry, including template variables
+  no-http-verbs-in-paths:                 warn # Verbs like "get" cannot be used in paths
+  no-identical-paths:                     warn # Paths cannot be identical, including template variables
+  no-path-trailing-slash:                 warn #  No trailing slashes on paths
+  # path-excludes-patterns:               warn # Set a regular expression that cannot be used in paths  
+  path-segment-plural: # All URL segments in a path must be plural (exceptions can be configured)
+    severity: warn  
+    exceptions:      
+      - login
+      - healthcheck
+      - ''
+  #paths-kebab-case:                       warn # Paths must be in kebab-case format
+
+  ## Requests, Responses, and Schemas
+  no-enum-type-mismatch:                  warn # Enum options must match the data type declared in the schema
+  no-example-value-and-externalValue:     warn # Either the value or externalValue may be present, but not both
+  no-invalid-media-type-examples:         warn # Example request bodies must match the declared schema
+  no-invalid-schema-examples:             warn # Schema examples must match declared types
+  request-mime-type:                            # Configure allowed mime types for requests
+      severity: warn
+      allowedValues:        
+        - application/hal+json;version=1.0.0
+        - application/octet-stream;version=1.0.0
+        - application/x-www-form-urlencoded;version=1.0.0
+        - multipart/form-data;version=X.X.X
+  #response-mime-type:                           # Configure allowed mime types for responses
+  #    severity: warn
+  #    allowedValues:
+  #      - application/hal+json;version=1.0.0
+  #      - application/problem+json
+  response-contains-header:               warn # List headers that must be included with specific response types
+  response-contains-property:             warn # Specify properties that must be present in specific response types
+  scalar-property-missing-example:        warn # All required scalar (non-object) properties must have examples defined
+  required-string-property-missing-min-length:   # All required properties of type string must have a minLength configured
+      severity: warn
+
+  ## Servers
+  no-empty-servers:                       warn # Servers array must be defined
+  no-server-example.com:                  warn # example.com is not acceptable as a server URL
+  no-server-trailing-slash:               warn # Server URLs cannot end with a slash (paths usually start with a slash)
+  no-server-variables-empty-enum:         warn # Require that enum values are set if variables are used in server definition
+  no-undefined-server-variable:           warn # All variables in server definition must be defined
+
+  ## Tags
+  operation-singular-tag:                 warn # Each operation may only have one tag
+  operation-tag-defined:                  warn # Tags can only be used if they are defined at the top level
+  tag-description:                        warn # Tags must have descriptions
+  tags-alphabetical:                      warn # Tags in the top-level tags section must appear alphabetically
+
+theme:
+  openapi:
+    generateCodeSamples:
+      languages:
+        - lang: curl
+        - lang: Node.js
+        - lang: Python
+        - lang: C#

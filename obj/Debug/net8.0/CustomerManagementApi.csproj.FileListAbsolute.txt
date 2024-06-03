@@ -31,3 +31,4 @@
 /Users/harishankarravindran/CustomerManagementApi/obj/Debug/net8.0/CustomerManagementApi.pdb
 /Users/harishankarravindran/CustomerManagementApi/obj/Debug/net8.0/CustomerManagementApi.genruntimeconfig.cache
 /Users/harishankarravindran/CustomerManagementApi/obj/Debug/net8.0/ref/CustomerManagementApi.dll
+/Users/harishankarravindran/CustomerManagementApi/obj/Debug/net8.0/CustomerManagementApi.sourcelink.json
