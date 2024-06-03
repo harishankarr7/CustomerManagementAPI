@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: Customer Management API
-  description: A powerful API for managing customer information, ensuring easy integration and extensibility.
+  title: Customer Data Management System
+  description: This API provides operations to manage customer data including creation, retrieval, update, and deletion of customer records. It ensures easy integration and extensibility for various business use cases.
   version: 1.0.0
   contact:
     name: API Support
@@ -11,9 +11,9 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://api.yourdomain.com
+  - url: https://api.yourdomain.com.lpl.com
     description: Production server
-  - url: https://localhost:5059
+  - url: https://api.local.yourdomain.com
     description: Local server
 
 paths:
@@ -31,6 +31,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Customer'
+        '201':
+          description: Customer created successfully
         '400':
           description: Bad request
           content:
@@ -141,6 +143,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Customer'
+        '201':
+          description: Customer created successfully
         '400':
           description: Bad request
           content:
@@ -198,6 +202,8 @@ paths:
       responses:
         '204':
           description: Customer updated
+        '201':
+          description: Customer created successfully
         '400':
           description: Bad request
           content:
@@ -248,6 +254,8 @@ paths:
       responses:
         '204':
           description: Customer deleted
+        '201':
+          description: Customer created successfully
         '400':
           description: Bad request
           content:
@@ -293,6 +301,8 @@ paths:
       responses:
         '200':
           description: API is healthy
+        '201':
+          description: Customer created successfully
         '400':
           description: Bad request
           content:
